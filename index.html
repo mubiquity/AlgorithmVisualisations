@@ -43,7 +43,7 @@
                         <p>Start by choosing a distribution to estimate.</p>
 
                         <form class="form-interaction">
-                            <select id="distribution-selector" aria-label="Distribution picker">
+                            <select id="distribution-selector" class="selector" aria-label="Distribution picker">
                                 <option value="gaussian">Gaussian</option>
                                 <option selected="selected" value="bimodal">Bimodal Gaussian</option>
                             </select>
@@ -89,12 +89,17 @@
 
                         <p></p>
 
-                        <p>Mauris ipsum. Nulla metus metus, ullamcorper vel, tincidunt sed, euismod in, nibh. Quisque
-                            volutpat condimentum velit. Class aptent taciti sociosqu ad litora torquent per conubia
-                            nostra, per inceptos himenaeos. Nam nec ante. Sed lacinia, urna non tincidunt mattis, tortor
-                            neque adipiscing diam, a cursus ipsum ante quis turpis. Nulla facilisi. Ut fringilla.
-                            Suspendisse potenti. Nunc feugiat mi a tellus consequat imperdiet. Vestibulum sapien. Proin
-                            quam. Etiam ultrices. Suspendisse in justo eu magna luctus suscipit. </p>
+                        <p>Now choose a kernel function.</p>
+
+                        <form class="form-interaction">
+                            <select id="kernel-selector" class="selector" aria-label="Kernel picker">
+                                <option selected="selected" value="gaussian">Gaussian</option>
+                                <option value="epan">Epanechnikov</option>
+                            </select>
+                        </form>
+
+                        <svg class="graph no-select" id="kernel-function"></svg>
+
 
                         <p>Sed lectus. Integer euismod lacus luctus magna. Quisque cursus, metus vitae pharetra auctor,
                             sem massa mattis sem, at interdum magna augue eget diam. Vestibulum ante ipsum primis in

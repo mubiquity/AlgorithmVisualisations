@@ -1,7 +1,9 @@
 // Global settings for graphs
 const width = 950;
 const fixedXDomain = [-10, 10];
-const colors = ["#7560A7", "#BB342F", "#7DB4AB", "#7E8284", "#F0DEE4", "#EBBC4C", "#508BA1"];
+// The commented colors are far more muted
+// const colors = ["#7560A7", "#BB342F", "#7DB4AB", "#7E8284", "#F0DEE4", "#EBBC4C", "#508BA1"];
+const colors = ["#9C21DB", "#FAB40D", "#7DB4AB", "#7E8284", "#F0DEE4", "#EBBC4C", "#508BA1"];
 const colorValues = colors.map(c => hexToRgb(c));
 
 // Generate some data in a normal distribution
@@ -198,6 +200,47 @@ dataChanged.addListener((d) => {
     pointGraph.coloring = currentDistribution === "bimodal" ? bimodalPointColoring : gaussianPointColoring;
     pointGraph.redraw(d);
 });
+
+// ========== Kernel Function ==========
+const kernelSelector = d3.select("#kernel-selector");
+const kernelChanged = new EventManager();
+
+function onKernelSelect() {
+    kernelChanged.trigger(kernelSelector.property("value"));
+}
+
+kernelSelector.on("input", onKernelSelect);
+
+const gaussian = x => (1/Math.sqrt(2*Math.PI)) * (Math.exp(-(1/2)*Math.pow(x, 2)));
+const epanechnikov = x => (3/4)*(1-Math.pow(x, 2));
+
+let kernelFunctionGraph;
+{
+    const height = 500;
+    const margin = {left: 30, right: 30, top: 30, bottom: 30};
+
+    let svg = d3.select("#kernel-function")
+        .attr("viewBox", [0, 0, width, height]);
+
+    const settings = new GraphSettings(svg, width, height, margin);
+
+    kernelFunctionGraph = new EquationPlotter(settings, colors[0]);
+}
+
+function switchKernelFunction(kernel) {
+    const step = 0.05;
+
+    switch (kernel) {
+        case "gaussian":
+            kernelFunctionGraph.redraw(-2.5, 2.5, step, gaussian, [-2.5, 2.5]);
+            break;
+        case "epan":
+            kernelFunctionGraph.redraw(-1, 1, step, epanechnikov, [-2.5, 2.5]);
+    }
+}
+
+kernelChanged.addListener(switchKernelFunction);
+onKernelSelect();
 
 // ============ Plot and setup the default state ================
 switchDistribution(distributionHistogram, currentDistribution);

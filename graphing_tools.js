@@ -17,29 +17,17 @@ class SingleGraph {
         this.settings.svg.selectAll("*").remove();
     }
 
-    draw(data) {
+    draw(...args) {
         throw new Error("This is an abstract method you can't call this directly")
     }
 
-    redraw(data) {
+    redraw(...args) {
         this.clear();
-        this.draw(data);
+        this.draw(...args);
     }
 }
 
-// ========== Histogram ==========
-
-class Histogram extends SingleGraph {
-    constructor(settings, ticks, coloring, fixedXDomain=null, fixedYDomain=null) {
-        // Coloring is a function that takes the bin data and returns a color
-        super(settings);
-
-        this.ticks = ticks;
-        this.coloring = coloring;
-        this.fixedXDomain = fixedXDomain;
-        this.fixedYDomain = fixedYDomain;
-    }
-
+class AxisGraph extends SingleGraph {
     addAxes(x, y) {
         let margin = this.settings.margin;
 
@@ -60,6 +48,20 @@ class Histogram extends SingleGraph {
         // Add Y axis
         this.settings.svg.append("g")
             .call(yAxis);
+    }
+}
+
+// ========== Histogram ==========
+
+class Histogram extends AxisGraph {
+    constructor(settings, ticks, coloring, fixedXDomain=null, fixedYDomain=null) {
+        // Coloring is a function that takes the bin data and returns a color
+        super(settings);
+
+        this.ticks = ticks;
+        this.coloring = coloring;
+        this.fixedXDomain = fixedXDomain;
+        this.fixedYDomain = fixedYDomain;
     }
 
     // Draw the histogram with the given data
@@ -177,5 +179,53 @@ class PointPlotter1D extends SingleGraph {
                 .attr("cx", d => this.xScale(d) + xJitt())
                 .attr("cy", () => (this.settings.height / 2) + yJitt()) // Not technically correct with margin
         }
+    }
+}
+
+// ========== Line Graph ==========
+
+class EquationPlotter extends AxisGraph {
+    constructor(settings, color, width=1.5) {
+        super(settings);
+        this.color = color;
+        this.lineWidth = width;
+    }
+
+    draw(xMin, xMax, step, equation, xDomain=null) {
+        let margin = this.settings.margin;
+
+        const range = d3.range(xMin, xMax, step);
+        range.push(xMax);
+        let data = d3.zip(range, range.map(equation));
+
+        let x = d3.scaleLinear()
+            .range([margin.left, this.settings.width - margin.right]);
+
+        if (xDomain === null) {
+            x = x.domain([xMin, xMax]).nice();
+        } else {
+            x = x.domain(xDomain);
+        }
+
+        let y = d3.scaleLinear()
+            .domain([0, d3.max(data, d=>d[1])])
+            .nice()
+            .range([this.settings.height - margin.bottom, margin.top]);
+
+        this.addAxes(x, y);
+
+        let line = d3.line()
+            .defined(d => !isNaN(d[1]))
+            .x(d => x(d[0]))
+            .y(d => y(d[1]));
+
+        this.settings.svg.append("path")
+            .datum(data)
+            .attr("fill", "none")
+            .attr("stroke", this.color)
+            .attr("stroke-width", this.lineWidth)
+            .attr("stroke-linejoin", "round")
+            .attr("stroke-linecap", "round")
+            .attr("d", line);
     }
 }
